@@ -1,0 +1,47 @@
+version: "3.3"
+
+services:
+  mongodb:
+    image: "mongo"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=max
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - goals-net
+  backend:
+    build: ./backend
+    ports:
+      - "5000:80"
+    environment:
+      - MONGODB_USERNAME=max
+      - MONGODB_PASSWORD=secret
+    volumes:
+      - logs:/app/logs
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - goals-net
+    depends_on:
+      - mongodb
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    networks:
+      - goals-net
+    depends_on:
+      - backend  
+  
+networks:
+  goals-net:
+    driver: bridge
+volumes:
+  mongodb_data:
+  logs:
